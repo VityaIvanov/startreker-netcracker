@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.util.Arrays;
+import java.util.List;
 
 @Service
 public class CarrierServiceImpl implements CarrierService {
@@ -50,6 +51,11 @@ public class CarrierServiceImpl implements CarrierService {
         return userService.createUser(signUpForm,
                 true,
                 Arrays.asList(AuthorityUtils.ROLE_CARRIER, AuthorityUtils.ROLE_USER));
+    }
+
+    @Override
+    public List<User> findAllCarriers() {
+        return userDAO.findAllCarriers();
     }
 
 }
