@@ -8,12 +8,7 @@ public interface RoleDAO {
 
     void save(Role role);
 
-    Optional<Role> get(Number id);
-
-    Optional<Role> get(String roleName);
+    Optional<Role> find(Number id);
 
     void delete(Role role);
-
-    void update(Role role);
-
 }

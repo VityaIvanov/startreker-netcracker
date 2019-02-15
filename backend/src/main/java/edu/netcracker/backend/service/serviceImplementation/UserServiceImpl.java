@@ -1,6 +1,7 @@
 package edu.netcracker.backend.service.serviceImplementation;
 
 
+import edu.netcracker.backend.controller.exception.RequestException;
 import edu.netcracker.backend.dao.daoInterface.UserDAO;
 import edu.netcracker.backend.dto.request.SignUpForm;
 import edu.netcracker.backend.model.Role;
@@ -19,6 +20,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.util.Collection;
+import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
@@ -28,6 +30,7 @@ public class UserServiceImpl implements UserService {
     private UserDAO userDAO;
     @Autowired
     private PasswordEncoder passwordEncoder;
+
 
     @Override
     public void save(User user) {
@@ -66,13 +69,13 @@ public class UserServiceImpl implements UserService {
         return newPassword;
     }
 
-    public User createUser(SignUpForm signUpForm, boolean isActivated) {
+    public User createUser(SignUpForm signUpForm, boolean isActivated, List<Role> roles) {
         User user = new User(signUpForm.getUsername(),
                 passwordEncoder.encode(signUpForm.getPassword()),
                 signUpForm.getEmail());
         user.setUserIsActivated(isActivated);
-        user.addRole(createUserRole());
-        user.setUserTelephone("aaaa");
+        user.setUserRoles(roles);
+        user.setUserTelephone(signUpForm.getTelephoneNumber());
         user.setUserCreatedDate(LocalDate.now());
         userDAO.save(user);
 
@@ -89,19 +92,15 @@ public class UserServiceImpl implements UserService {
                 mapRolesToAuthorities(userInformationHolder.getRoles()));
     }
 
-    private Collection<? extends GrantedAuthority> mapRolesToAuthorities(Collection<String> roles) {
-        return roles.stream().map(SimpleGrantedAuthority::new).collect(Collectors.toList());
-    }
-
-    private Role createUserRole() {
-        return AuthorityUtils.ROLE_USER;
-    }
-
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         User user = userDAO.findByUsername(username).orElseThrow(
                 () -> new UsernameNotFoundException(username + " not found"));
 
         return user;
+    }
+
+    private Collection<? extends GrantedAuthority> mapRolesToAuthorities(Collection<String> roles) {
+        return roles.stream().map(SimpleGrantedAuthority::new).collect(Collectors.toList());
     }
 }

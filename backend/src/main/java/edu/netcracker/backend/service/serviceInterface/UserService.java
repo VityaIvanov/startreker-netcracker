@@ -1,10 +1,13 @@
 package edu.netcracker.backend.service.serviceInterface;
 
 import edu.netcracker.backend.dto.request.SignUpForm;
+import edu.netcracker.backend.model.Role;
 import edu.netcracker.backend.model.User;
 import edu.netcracker.backend.security.UserInformationHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
+
+import java.util.List;
 
 public interface UserService extends UserDetailsService {
 
@@ -24,5 +27,5 @@ public interface UserService extends UserDetailsService {
 
     String changePasswordForUser(User user);
 
-    User createUser(SignUpForm signUpForm, boolean isActivated);
+    User createUser(SignUpForm signUpForm, boolean isActivated, List<Role> roles);
 }

@@ -21,3 +21,7 @@ CREATE TABLE assigned_role
   user_id BIGINT REFERENCES usr (user_id),
   role_id BIGINT REFERENCES role (role_id)
 );
+
+INSERT INTO role (role_name) VALUES ('ROLE_ADMIN');
+INSERT INTO role (role_name) VALUES ('ROLE_USER');
+INSERT INTO role (role_name) VALUES ('ROLE_CARRIER');

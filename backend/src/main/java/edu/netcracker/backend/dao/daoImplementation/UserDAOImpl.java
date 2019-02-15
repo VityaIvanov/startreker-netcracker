@@ -1,16 +1,24 @@
 package edu.netcracker.backend.dao.daoImplementation;
 
+import edu.netcracker.backend.dao.daoInterface.CrudDAO;
 import edu.netcracker.backend.dao.daoInterface.RoleDAO;
 import edu.netcracker.backend.dao.daoInterface.UserDAO;
+import edu.netcracker.backend.dao.rowMapper.UserRowMapper;
+import edu.netcracker.backend.model.Role;
 import edu.netcracker.backend.model.User;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.stereotype.Repository;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Repository
-public class UserDAOImpl implements UserDAO {
+public class UserDAOImpl extends CrudDAO<User> implements UserDAO {
 
     private final RoleDAO roleDAO;
     private final String findByUsernameSql = "SELECT * FROM usr WHERE user_name = ?";
@@ -20,6 +28,9 @@ public class UserDAOImpl implements UserDAO {
     private final String addRoleSql = "INSERT INTO assigned_role (user_id, role_id) VALUES (?, ?)";
     private final String removeRoleSql = "DELETE FROM assigned_role WHERE user_id = ? AND role_id = ?";
 
+    private final String findByEmailCarrierSql = "SELECT * FROM usr WHERE user_email = ?";
+    private final String findAllRolesCarrierSql = "SELECT role_id FROM assigned_role WHERE user_id = ?";
+
     @Autowired
     public UserDAOImpl(RoleDAO roleDAO) {
         this.roleDAO = roleDAO;
@@ -27,31 +38,101 @@ public class UserDAOImpl implements UserDAO {
 
     @Override
     public Optional<User> find(Number id) {
-        return null;
+        Optional<User> userOpt = super.find(id);
+        if (userOpt.isPresent()) {
+            User user = userOpt.get();
+            return attachRoles(user);
+        }
+        return Optional.empty();
     }
 
     public Optional<User> findByUsername(String userName) {
-        return null;
+        try{
+            User user = getJdbcTemplate().queryForObject(
+                    findByUsernameSql,
+                    new Object[]{userName},
+                    new UserRowMapper());
+            return user != null ? attachRoles(user) : Optional.empty();
+        }catch (EmptyResultDataAccessException e){
+            return Optional.empty();
+        }
     }
 
     public Optional<User> findByEmail(String email) {
-        return null;
+        try{
+            User user = getJdbcTemplate().queryForObject(
+                    findByEmailSql,
+                    new Object[]{email},
+                    new UserRowMapper());
+            return user != null ? attachRoles(user) : Optional.empty();
+        }catch (EmptyResultDataAccessException e){
+            return Optional.empty();
+        }
+    }
+
+    @Override
+    public Optional<User> findCarrierByUsername(String userName) {
+        try{
+            User user = getJdbcTemplate().queryForObject(
+                    findByUsernameSql,
+                    new Object[]{userName},
+                    new UserRowMapper());
+            return user != null ? attachRoles(user) : Optional.empty();
+        }catch (EmptyResultDataAccessException e){
+            return Optional.empty();
+        }
+    }
+
+    @Override
+    public Optional<User> findCarrierByEmail(String email) {
+        try{
+            User user = getJdbcTemplate().queryForObject(
+                    findByEmailSql,
+                    new Object[]{email},
+                    new UserRowMapper());
+            return user != null ? attachRoles(user) : Optional.empty();
+        }catch (EmptyResultDataAccessException e){
+            return Optional.empty();
+        }
     }
 
     @Override
     public void save(User user) {
-
+        super.save(user);
+        updateRoles(user);
     }
 
     @Override
     public void delete(User user) {
+        getJdbcTemplate().update(removeAllUserRolesSql, user.getUserId());
+        super.delete(user);
     }
 
     private Optional<User> attachRoles(User user) {
-        return null;
+        List<Long> rows = getJdbcTemplate().queryForList(findAllRolesSql, Long.class, user.getUserId());
+        List<Role> roles = new ArrayList<>();
+        for (Long role_id : rows) {
+            roles.add(roleDAO.find(role_id).orElse(null));
+        }
+        user.setUserRoles(roles);
+        return Optional.of(user);
     }
 
     private void updateRoles(User user) {
-
+        List<Long> dbRoleIds = getJdbcTemplate().queryForList(findAllRolesSql, Long.class, user.getUserId());
+        List<Long> userRoleIds = user.getUserRoles()
+                .stream()
+                .map(Role::getRoleId)
+                .collect(Collectors.toList());
+        for (Long role_id : userRoleIds) {
+            if (!dbRoleIds.contains(role_id)) {
+                getJdbcTemplate().update(addRoleSql, user.getUserId(), role_id);
+            }
+        }
+        for (Long db_role : dbRoleIds) {
+            if (!userRoleIds.contains(db_role)) {
+                getJdbcTemplate().update(removeRoleSql, user.getUserId(), db_role);
+            }
+        }
     }
 }

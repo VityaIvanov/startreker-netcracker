@@ -22,16 +22,27 @@ import java.util.stream.Collectors;
 
 @Getter
 @Setter
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 @NoArgsConstructor
+@Table("usr")
 public class User implements UserDetails {
 
+    @PrimaryKey("user_id")
+    @EqualsAndHashCode.Include
     private Long userId;
+    @Attribute("user_name")
     private String userName;
+    @Attribute("user_password")
     private String userPassword;
+    @Attribute("user_email")
     private String userEmail;
+    @Attribute("user_telephone")
     private String userTelephone;
+    @Attribute("user_token")
     private String userRefreshToken;
+    @Attribute("user_activated")
     private boolean userIsActivated;
+    @Attribute("user_created")
     private LocalDate userCreatedDate;
 
     private List<Role> userRoles = new ArrayList<>();
