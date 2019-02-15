@@ -5,7 +5,9 @@ import org.postgresql.ds.PGSimpleDataSource;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
 import org.springframework.context.annotation.PropertySource;
+import org.springframework.jdbc.datasource.DriverManagerDataSource;
 
 import javax.sql.DataSource;
 import javax.validation.constraints.NotNull;
@@ -28,6 +30,7 @@ public class DatabaseConfig {
     private String password;
 
     @Bean
+    @Profile("prod")
     DataSource dataSource() {
         PGSimpleDataSource dataSource = new PGSimpleDataSource();
         dataSource.setServerName(serverName);
