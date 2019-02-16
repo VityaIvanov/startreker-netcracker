@@ -26,9 +26,14 @@ public class UserDAOImpl extends CrudDAO<User> implements UserDAO {
     private final String addRoleSql = "INSERT INTO assigned_role (user_id, role_id) VALUES (?, ?)";
     private final String removeRoleSql = "DELETE FROM assigned_role WHERE user_id = ? AND role_id = ?";
 
-    private final String findByUsernameCarrierSql = "SELECT DISTINCT * FROM usr\n" +
+    private final String findAll = "SELECT DISTINCT * FROM usr\n" +
             "  INNER JOIN assigned_role ON assigned_role.user_id = usr.user_id\n" +
-            "  INNER JOIN role ON assigned_role.role_id = role.role_id WHERE role_name = 'ROLE_CARRIER' and user_name = ?;";
+            "  INNER JOIN role ON assigned_role.role_id = role.role_id;";
+
+    private final String findAllByRole = "SELECT DISTINCT * FROM usr\n" +
+            "  INNER JOIN assigned_role ON assigned_role.user_id = usr.user_id\n" +
+            "  INNER JOIN role ON assigned_role.role_id = role.role_id " +
+            "  WHERE role_name = ?;";
 
     private final String findByEmailCarrierSql = "SELECT DISTINCT * FROM usr\n" +
             "  INNER JOIN assigned_role ON assigned_role.user_id = usr.user_id\n" +
@@ -78,50 +83,43 @@ public class UserDAOImpl extends CrudDAO<User> implements UserDAO {
     }
 
     @Override
-    public Optional<User> findCarrierByUsername(String userName) {
-        try{
-            User user = getJdbcTemplate().queryForObject(
-                    findByUsernameCarrierSql,
-                    new Object[]{userName},
-                    getGenericMapper());
-            return user != null ? attachRoles(user) : Optional.empty();
-        }catch (EmptyResultDataAccessException e){
-            return Optional.empty();
-        }
-    }
+    public List<User> findAll() {
+        ArrayList<User> users = new ArrayList<>();
 
-    @Override
-    public Optional<User> findCarrierByEmail(String email) {
-        try{
-            User user = getJdbcTemplate().queryForObject(
-                    findByEmailCarrierSql,
-                    new Object[]{email},
-                    getGenericMapper());
-            return user != null ? attachRoles(user) : Optional.empty();
-        }catch (EmptyResultDataAccessException e){
-            return Optional.empty();
-        }
-    }
-
-    @Override
-    public Optional<List<User>> findAllCarriers() {
-        try{
-            List<User> users = getJdbcTemplate().query(
-                    findAllCarrierSql,
-                    getGenericMapper());
-
-            if (users == null) {
-                return Optional.empty();
-            }
+        try {
+            users.addAll(getJdbcTemplate().query(
+                    findAll,
+                    getGenericMapper()));
 
             for (User user: users) {
                 attachRoles(user);
             }
 
-            return Optional.of(users);
-        } catch (EmptyResultDataAccessException e){
-            return Optional.empty();
+        } catch (EmptyResultDataAccessException e) {
+            logger.error(e.getMessage());
         }
+
+        return users;
+    }
+
+    @Override
+    public List<User> findAll(String roleName) {
+        ArrayList<User> users = new ArrayList<>();
+
+        try {
+            users.addAll(getJdbcTemplate().query(
+                    findAllByRole,
+                    getGenericMapper()));
+
+            for (User user: users) {
+                attachRoles(user);
+            }
+
+        } catch (EmptyResultDataAccessException e) {
+            logger.error(e.getMessage());
+        }
+
+        return users;
     }
 
     @Override

@@ -38,12 +38,12 @@ public class CarrierServiceImpl implements CarrierService {
 
     @Override
     public User findByUsername(String userName) {
-        return userDAO.findCarrierByUsername(userName).orElse(null);
+        return userDAO.findByUsername(userName).orElse(null);
     }
 
     @Override
     public User findByEmail(String email) {
-        return userDAO.findCarrierByEmail(email).orElse(null);
+        return userDAO.findByEmail(email).orElse(null);
     }
 
     @Override
@@ -55,7 +55,8 @@ public class CarrierServiceImpl implements CarrierService {
 
     @Override
     public List<User> findAllCarriers() {
-        return userDAO.findAllCarriers();
+        return userDAO.findAll("ROLE_CARRIER");
     }
+
 
 }

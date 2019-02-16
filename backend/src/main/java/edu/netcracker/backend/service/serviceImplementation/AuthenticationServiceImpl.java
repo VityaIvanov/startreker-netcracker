@@ -43,6 +43,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
     @Override
     public User signUp(SignUpForm signUpForm, HttpServletRequest request) {
+
         if (userService.ifUsernameExist(signUpForm.getUsername())) {
             throw new RequestException("Username already exist", ERROR_USER_ALREADY_EXISTS);
         }

@@ -1,5 +1,6 @@
 package edu.netcracker.backend.dao.daoInterface;
 
+import edu.netcracker.backend.model.Role;
 import edu.netcracker.backend.model.User;
 
 import java.util.List;
@@ -17,9 +18,7 @@ public interface UserDAO {
 
     Optional<User> findByEmail(String email);
 
-    Optional<User> findCarrierByUsername(String userName);
+    List<User> findAll();
 
-    Optional<User> findCarrierByEmail(String email);
-
-    Optional<List<User>> findAllCarriers();
+    List<User> findAll(String roleName);
 }

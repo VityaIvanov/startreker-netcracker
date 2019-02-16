@@ -77,6 +77,7 @@ public class UserServiceImpl implements UserService {
         user.setUserRoles(roles);
         user.setUserTelephone(signUpForm.getTelephoneNumber());
         user.setUserCreatedDate(LocalDate.now());
+
         userDAO.save(user);
 
         return user;

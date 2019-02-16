@@ -31,7 +31,7 @@ public class AuthController {
     }
 
     @PostMapping(path = "/api/auth/sign-up")
-    public UserDTO signUp(@Valid @RequestBody SignUpForm signUpForm, HttpServletRequest request){
+    public UserDTO signUp(@Valid @RequestBody SignUpForm signUpForm, HttpServletRequest request) {
         User user = authenticationService.signUp(signUpForm, request);
 
         return UserDTO.from(user);
