@@ -59,7 +59,7 @@ public class UserDAOImpl extends CrudDAO<User> implements UserDAO {
             User user = getJdbcTemplate().queryForObject(
                     findByUsernameSql,
                     new Object[]{userName},
-                    new UserRowMapper());
+                    getGenericMapper());
             return user != null ? attachRoles(user) : Optional.empty();
         }catch (EmptyResultDataAccessException e){
             return Optional.empty();
@@ -71,7 +71,7 @@ public class UserDAOImpl extends CrudDAO<User> implements UserDAO {
             User user = getJdbcTemplate().queryForObject(
                     findByEmailSql,
                     new Object[]{email},
-                    new UserRowMapper());
+                    getGenericMapper());
             return user != null ? attachRoles(user) : Optional.empty();
         }catch (EmptyResultDataAccessException e){
             return Optional.empty();
@@ -84,7 +84,7 @@ public class UserDAOImpl extends CrudDAO<User> implements UserDAO {
             User user = getJdbcTemplate().queryForObject(
                     findByUsernameCarrierSql,
                     new Object[]{userName},
-                    new UserRowMapper());
+                    getGenericMapper());
             return user != null ? attachRoles(user) : Optional.empty();
         }catch (EmptyResultDataAccessException e){
             return Optional.empty();
@@ -97,7 +97,7 @@ public class UserDAOImpl extends CrudDAO<User> implements UserDAO {
             User user = getJdbcTemplate().queryForObject(
                     findByEmailCarrierSql,
                     new Object[]{email},
-                    new UserRowMapper());
+                    getGenericMapper());
             return user != null ? attachRoles(user) : Optional.empty();
         }catch (EmptyResultDataAccessException e){
             return Optional.empty();
@@ -109,7 +109,7 @@ public class UserDAOImpl extends CrudDAO<User> implements UserDAO {
         try{
             List<User> users = getJdbcTemplate().query(
                     findAllCarrierSql,
-                    new UserRowMapper());
+                    getGenericMapper());
 
             if (users == null) {
                 return Optional.empty();
