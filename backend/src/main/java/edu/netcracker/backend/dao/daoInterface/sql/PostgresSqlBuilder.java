@@ -1,13 +1,13 @@
-package edu.netcracker.backend.dao.sql;
+package edu.netcracker.backend.dao.daoInterface.sql;
 
-import edu.netcracker.backend.dao.annotations.Attribute;
-import edu.netcracker.backend.dao.annotations.PrimaryKey;
-import edu.netcracker.backend.dao.annotations.Table;
+import edu.netcracker.backend.dao.annotation.Attribute;
+import edu.netcracker.backend.dao.annotation.PrimaryKey;
+import edu.netcracker.backend.dao.annotation.Table;
 
 import java.lang.reflect.Field;
 import java.util.Map;
 
-public class PostgresSqlBuilder implements SQLBuilder{
+public class PostgresSqlBuilder implements SQLBuilder {
 
     private Class<?> clazz;
     private Map<Field, PrimaryKey> fieldPrimaryKeyMap;

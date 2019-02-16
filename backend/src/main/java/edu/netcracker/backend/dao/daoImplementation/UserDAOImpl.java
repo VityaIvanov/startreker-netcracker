@@ -3,7 +3,6 @@ package edu.netcracker.backend.dao.daoImplementation;
 import edu.netcracker.backend.dao.daoInterface.CrudDAO;
 import edu.netcracker.backend.dao.daoInterface.RoleDAO;
 import edu.netcracker.backend.dao.daoInterface.UserDAO;
-import edu.netcracker.backend.dao.rowMapper.UserRowMapper;
 import edu.netcracker.backend.model.Role;
 import edu.netcracker.backend.model.User;
 import org.springframework.beans.factory.annotation.Autowired;

@@ -1,10 +1,10 @@
-package edu.netcracker.backend.dao;
+package edu.netcracker.backend.dao.daoInterface;
 
-import edu.netcracker.backend.dao.annotations.Attribute;
-import edu.netcracker.backend.dao.annotations.PrimaryKey;
-import edu.netcracker.backend.dao.mapper.GenericMapper;
-import edu.netcracker.backend.dao.sql.PostgresSqlBuilder;
-import edu.netcracker.backend.dao.sql.SQLBuilder;
+import edu.netcracker.backend.dao.annotation.Attribute;
+import edu.netcracker.backend.dao.annotation.PrimaryKey;
+import edu.netcracker.backend.dao.daoInterface.sql.PostgresSqlBuilder;
+import edu.netcracker.backend.dao.daoInterface.sql.SQLBuilder;
+import edu.netcracker.backend.dao.rowMapper.GenericMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;

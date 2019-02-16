@@ -1,7 +1,7 @@
-package edu.netcracker.backend.dao.mapper;
+package edu.netcracker.backend.dao.rowMapper;
 
-import edu.netcracker.backend.dao.annotations.Attribute;
-import edu.netcracker.backend.dao.annotations.PrimaryKey;
+import edu.netcracker.backend.dao.annotation.Attribute;
+import edu.netcracker.backend.dao.annotation.PrimaryKey;
 import lombok.Setter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

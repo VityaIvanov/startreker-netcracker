@@ -1,4 +1,4 @@
-package edu.netcracker.backend.dao.sql;
+package edu.netcracker.backend.dao.daoInterface.sql;
 
 public interface SQLBuilder {
 
