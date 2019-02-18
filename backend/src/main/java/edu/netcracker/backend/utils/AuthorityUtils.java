@@ -14,6 +14,7 @@ import javax.annotation.PostConstruct;
 public class AuthorityUtils {
 
     private final RoleDAO roleDAO;
+
     public static Role ROLE_ADMIN;
     public static Role ROLE_USER;
     public static Role ROLE_CARRIER;

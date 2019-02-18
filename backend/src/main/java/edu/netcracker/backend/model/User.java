@@ -99,4 +99,8 @@ public class User implements UserDetails {
     public boolean isEnabled() {
         return true;
     }
+
+    public boolean isUserIsActivated() {
+        return userIsActivated;
+    }
 }

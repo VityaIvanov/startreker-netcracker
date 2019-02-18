@@ -9,6 +9,7 @@ import edu.netcracker.backend.model.User;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import org.springframework.dao.EmptyResultDataAccessException;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
 import java.util.ArrayList;
@@ -27,17 +28,25 @@ public class UserDAOImpl extends CrudDAO<User> implements UserDAO {
     private final String addRoleSql = "INSERT INTO assigned_role (user_id, role_id) VALUES (?, ?)";
     private final String removeRoleSql = "DELETE FROM assigned_role WHERE user_id = ? AND role_id = ?";
 
-    private final String findByUsernameCarrierSql = "SELECT DISTINCT * FROM usr\n" +
+    private final String findByUsernameWithRoleSql = "SELECT DISTINCT * FROM usr\n" +
             "  INNER JOIN assigned_role ON assigned_role.user_id = usr.user_id\n" +
-            "  INNER JOIN role ON assigned_role.role_id = role.role_id WHERE role_name = 'ROLE_CARRIER' and user_name = ?;";
+            "  INNER JOIN role ON assigned_role.role_id = role.role_id WHERE role_name = ? and user_name = ?;";
 
-    private final String findByEmailCarrierSql = "SELECT DISTINCT * FROM usr\n" +
+    private final String findByEmailWithRoleSql = "SELECT DISTINCT * FROM usr\n" +
             "  INNER JOIN assigned_role ON assigned_role.user_id = usr.user_id\n" +
-            "  INNER JOIN role ON assigned_role.role_id = role.role_id WHERE role_name = 'ROLE_CARRIER' and user_email = ?;";
+            "  INNER JOIN role ON assigned_role.role_id = role.role_id WHERE role_name = ? and user_email = ?;";
 
-    private final String findAllCarrierSql = "SELECT DISTINCT * FROM usr\n" +
+    private final String findAllByRoleSql = "SELECT DISTINCT * FROM usr\n" +
             "  INNER JOIN assigned_role ON assigned_role.user_id = usr.user_id\n" +
-            "  INNER JOIN role ON assigned_role.role_id = role.role_id WHERE role_name = 'ROLE_CARRIER'";
+            "  INNER JOIN role ON assigned_role.role_id = role.role_id WHERE role_name = ?";
+
+    private final String findAllByRoleInRangeSql = "SELECT DISTINCT * FROM usr\n" +
+            "  INNER JOIN assigned_role ON assigned_role.user_id = usr.user_id\n" +
+            "  INNER JOIN role ON assigned_role.role_id = role.role_id WHERE role_name = ? AND usr.user_id BETWEEN ? AND ?";
+
+    private final String findByRoleWithIdSql = "SELECT DISTINCT * FROM usr\n" +
+            "  INNER JOIN assigned_role ON assigned_role.user_id = usr.user_id\n" +
+            "  INNER JOIN role ON assigned_role.role_id = role.role_id WHERE role_name = ? AND usr.user_id = ?";
 
     @Autowired
     public UserDAOImpl(RoleDAO roleDAO) {
@@ -79,50 +88,46 @@ public class UserDAOImpl extends CrudDAO<User> implements UserDAO {
     }
 
     @Override
-    public Optional<User> findCarrierByUsername(String userName) {
-        try{
-            User user = getJdbcTemplate().queryForObject(
-                    findByUsernameCarrierSql,
-                    new Object[]{userName},
-                    new UserRowMapper());
-            return user != null ? attachRoles(user) : Optional.empty();
-        }catch (EmptyResultDataAccessException e){
-            return Optional.empty();
-        }
+    public Optional<User> findByUsernameWithRole(String userName, Role role) {
+        return executeSqlWithParam(findByUsernameWithRoleSql,new Object[]{role.getRoleName(), userName});
     }
 
     @Override
-    public Optional<User> findCarrierByEmail(String email) {
-        try{
-            User user = getJdbcTemplate().queryForObject(
-                    findByEmailCarrierSql,
-                    new Object[]{email},
-                    new UserRowMapper());
-            return user != null ? attachRoles(user) : Optional.empty();
-        }catch (EmptyResultDataAccessException e){
-            return Optional.empty();
-        }
+    public Optional<User> findByEmailWithRole(String email, Role role) {
+        return executeSqlWithParam(findByEmailWithRoleSql, new Object[]{role.getRoleName(), email});
     }
 
     @Override
-    public Optional<List<User>> findAllCarriers() {
-        try{
-            List<User> users = getJdbcTemplate().query(
-                    findAllCarrierSql,
-                    new UserRowMapper());
+    public Optional<User> findByIdWithRole(Number id, Role role) {
+        return executeSqlWithParam(findByRoleWithIdSql, new Object[]{role.getRoleName(), id});
+    }
 
-            if (users == null) {
-                return Optional.empty();
-            }
+    @Override
+    public List<User> findByRangeIdWithRole(Number startId, Number endId, Role role) {
+        List<User> users = new ArrayList<>();
 
-            for (User user: users) {
-                attachRoles(user);
-            }
+        users.addAll(getJdbcTemplate().query(
+                findAllByRoleInRangeSql,
+                new Object[]{role.getRoleName(), startId, endId},
+                new UserRowMapper()));
 
-            return Optional.of(users);
-        } catch (EmptyResultDataAccessException e){
-            return Optional.empty();
-        }
+        users.forEach(this::attachRoles);
+
+        return users;
+    }
+
+    @Override
+    public List<User> findAllWithRole(Role role) {
+        List<User> users = new ArrayList<>();
+
+        users.addAll(getJdbcTemplate().query(
+                    findAllByRoleSql,
+                    new Object[]{role.getRoleName()},
+                    new UserRowMapper()));
+
+        users.forEach(this::attachRoles);
+
+        return users;
     }
 
     @Override
@@ -135,6 +140,18 @@ public class UserDAOImpl extends CrudDAO<User> implements UserDAO {
     public void delete(User user) {
         getJdbcTemplate().update(removeAllUserRolesSql, user.getUserId());
         super.delete(user);
+    }
+
+    private Optional<User> executeSqlWithParam(String sql, Object[] params) {
+        try{
+            User user = getJdbcTemplate().queryForObject(
+                    sql,
+                    params,
+                    new UserRowMapper());
+            return user != null ? attachRoles(user) : Optional.empty();
+        }catch (EmptyResultDataAccessException e){
+            return Optional.empty();
+        }
     }
 
     private Optional<User> attachRoles(User user) {

@@ -1,14 +1,12 @@
 package edu.netcracker.backend.service.serviceImplementation;
 
-
-import edu.netcracker.backend.controller.exception.RequestException;
 import edu.netcracker.backend.dao.daoInterface.UserDAO;
 import edu.netcracker.backend.dto.request.SignUpForm;
+import edu.netcracker.backend.dto.request.UserCreateForm;
 import edu.netcracker.backend.model.Role;
 import edu.netcracker.backend.model.User;
 import edu.netcracker.backend.security.UserInformationHolder;
 import edu.netcracker.backend.service.serviceInterface.UserService;
-import edu.netcracker.backend.utils.AuthorityUtils;
 import edu.netcracker.backend.utils.PasswordGeneratorUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.GrantedAuthority;
@@ -31,15 +29,29 @@ public class UserServiceImpl implements UserService {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
-
     @Override
     public void save(User user) {
         userDAO.save(user);
     }
 
     @Override
+    public User find(Number id) {
+        return userDAO.find(id).orElse(null);
+    }
+
+    @Override
     public void delete(User user) {
         userDAO.delete(user);
+    }
+
+    @Override
+    public boolean ifUsernameExist(String username) {
+        return userDAO.findByUsername(username).isPresent();
+    }
+
+    @Override
+    public boolean ifEmailExist(String email) {
+        return userDAO.findByEmail(email).isPresent();
     }
 
     @Override
@@ -52,14 +64,7 @@ public class UserServiceImpl implements UserService {
         return userDAO.findByEmail(email).orElse(null);
     }
 
-    public boolean ifUsernameExist(String username) {
-        return userDAO.findByUsername(username).isPresent();
-    }
-
-    public boolean ifEmailExist(String email) {
-        return userDAO.findByEmail(email).isPresent();
-    }
-
+    @Override
     public String changePasswordForUser(User user) {
         String newPassword = PasswordGeneratorUtils.generatePassword();
 
@@ -69,6 +74,7 @@ public class UserServiceImpl implements UserService {
         return newPassword;
     }
 
+    @Override
     public User createUser(SignUpForm signUpForm, boolean isActivated, List<Role> roles) {
         User user = new User(signUpForm.getUsername(),
                 passwordEncoder.encode(signUpForm.getPassword()),
@@ -82,6 +88,46 @@ public class UserServiceImpl implements UserService {
         return user;
     }
 
+    @Override
+    public User createUser(UserCreateForm userCreateForm, List<Role> roles) {
+        User user = new User(userCreateForm.getUsername(),
+                passwordEncoder.encode(userCreateForm.getPassword()),
+                userCreateForm.getEmail());
+        user.setUserIsActivated(userCreateForm.getIsActivated());
+        user.setUserRoles(roles);
+        user.setUserTelephone(userCreateForm.getTelephoneNumber());
+        user.setUserCreatedDate(LocalDate.now());
+        userDAO.save(user);
+
+        return user;
+    }
+
+    @Override
+    public User findByUsernameWithRole(String userName, Role role) {
+        return userDAO.findByUsernameWithRole(userName, role).orElse(null);
+    }
+
+    @Override
+    public User findByEmailWithRole(String email, Role role) {
+        return userDAO.findByEmailWithRole(email, role).orElse(null);
+    }
+
+    @Override
+    public User findByIdWithRole(Number id, Role role) {
+        return userDAO.findByIdWithRole(id, role).orElse(null);
+    }
+
+    @Override
+    public List<User> findByRangeIdWithRole(Number startId, Number endId, Role role) {
+        return userDAO.findByRangeIdWithRole(startId, endId, role);
+    }
+
+    @Override
+    public List<User> findAllWithRole(Role role) {
+        return userDAO.findAllWithRole(role);
+    }
+
+    @Override
     public UserDetails createUserDetails(UserInformationHolder userInformationHolder) {
         if (userInformationHolder == null) {
             return null;
@@ -94,10 +140,8 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        User user = userDAO.findByUsername(username).orElseThrow(
+        return userDAO.findByUsername(username).orElseThrow(
                 () -> new UsernameNotFoundException(username + " not found"));
-
-        return user;
     }
 
     private Collection<? extends GrantedAuthority> mapRolesToAuthorities(Collection<String> roles) {

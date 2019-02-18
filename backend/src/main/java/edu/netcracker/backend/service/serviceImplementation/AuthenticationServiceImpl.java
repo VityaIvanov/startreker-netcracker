@@ -44,11 +44,11 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     @Override
     public User signUp(SignUpForm signUpForm, HttpServletRequest request) {
         if (userService.ifUsernameExist(signUpForm.getUsername())) {
-            throw new RequestException("Username already exist", ERROR_USER_ALREADY_EXISTS);
+            throw new RequestException("Username already exist");
         }
 
         if (userService.ifEmailExist(signUpForm.getEmail())) {
-            throw new RequestException("Email already exist", ERROR_MAIL_ALREADY_EXISTS);
+            throw new RequestException("Email already exist");
         }
 
         User user = userService.createUser(signUpForm, false, Collections.singletonList(AuthorityUtils.ROLE_USER));
@@ -65,7 +65,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         User user = userService.findByEmail(emailFrom.getEmail());
 
         if (user == null) {
-            throw new RequestException("No such user", ERROR_NO_SUCH_USER);
+            throw new RequestException("No such user");
         }
 
         String newUserPassword = userService.changePasswordForUser(user);
@@ -101,12 +101,12 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     public Message confirmPassword(String token) {
 
         if (!jwtProvider.validateToken(token))
-            throw new RequestException("Invalid token", ERROR_NO_SUCH_USER);
+            throw new RequestException("Invalid token");
 
         User user = userService.findByUsername(jwtProvider.retrieveSubject(token));
 
         if (user == null) {
-            throw new RequestException("Invalid token", ERROR_NO_SUCH_USER);
+            throw new RequestException("Invalid token");
         }
 
         user.setUserIsActivated(true);
@@ -120,7 +120,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
         if (authentication == null) {
-            throw new RequestException("User is not authenticated!", 1);
+            throw new RequestException("User is not authenticated!");
         }
 
         UserDetails userDetails = (UserDetails) authentication.getPrincipal();
@@ -128,7 +128,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         User user = userService.findByUsername(userDetails.getUsername());
 
         if (user == null)
-            throw new RequestException("No such user!", 2);
+            throw new RequestException("No such user!");
 
 
         user.setUserRefreshToken(null);

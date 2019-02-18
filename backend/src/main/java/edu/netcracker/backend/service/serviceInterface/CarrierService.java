@@ -1,21 +1,29 @@
 package edu.netcracker.backend.service.serviceInterface;
 
-import edu.netcracker.backend.dto.request.SignUpForm;
-import edu.netcracker.backend.model.User;
+
+
+import edu.netcracker.backend.dto.request.UserCreateForm;
+import edu.netcracker.backend.dto.request.UserUpdateForm;
+import edu.netcracker.backend.dto.response.UserDTO;
 
 import java.util.List;
 
+
 public interface CarrierService {
 
-    void save(User user);
+    UserDTO getCarrierByUsername(String username);
 
-    void delete(User user);
+    UserDTO getCarrierByEmail(String email);
 
-    User findByUsername(String userName);
+    UserDTO getCarrierById(Number userId);
 
-    User findByEmail(String email);
+    List<UserDTO> getAllCarrier();
 
-    User createCarrier(SignUpForm signUpForm);
+    List<UserDTO> getAllCarrier(Number startId, Number endId);
 
-    List<User> findAllCarriers();
+    UserDTO createCarrier(UserCreateForm createForm);
+
+    UserDTO deleteCarrier(Number userId);
+
+    UserDTO updateCarrier(UserUpdateForm updateFrom);
 }
