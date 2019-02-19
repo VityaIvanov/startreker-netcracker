@@ -29,7 +29,7 @@ public class User implements UserDetails {
 
     @PrimaryKey("user_id")
     @EqualsAndHashCode.Include
-    private Long userId;
+    private Integer userId;
     @Attribute("user_name")
     private String userName;
     @Attribute("user_password")

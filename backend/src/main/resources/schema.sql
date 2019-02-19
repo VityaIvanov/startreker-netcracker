@@ -25,36 +25,3 @@ CREATE TABLE assigned_role
 INSERT INTO role (role_name) VALUES ('ROLE_ADMIN');
 INSERT INTO role (role_name) VALUES ('ROLE_USER');
 INSERT INTO role (role_name) VALUES ('ROLE_CARRIER');
-
-INSERT INTO usr (user_id, user_name, user_password, user_email, user_telephone, user_token, user_activated, user_created)
-VALUES (1, 'vitya', 'asdsad','a1','asdsad', 'asdsad', false, NOW());
-INSERT INTO usr (user_id, user_name, user_password, user_email, user_telephone, user_token, user_activated, user_created)
-VALUES (2, 'a', 'asdsad','a2','asdsad', 'asdsad', false,  NOW());
-INSERT INTO usr (user_id, user_name, user_password, user_email, user_telephone, user_token, user_activated, user_created)
-VALUES (3, 'b', 'asdsad','a3','asdsad', 'asdsad', false,  NOW());
-INSERT INTO usr (user_id, user_name, user_password, user_email, user_telephone, user_token, user_activated, user_created)
-VALUES (4, 'c', 'asdsad','a4','asdsad', 'asdsad', false,  NOW());
-INSERT INTO usr (user_id, user_name, user_password, user_email, user_telephone, user_token, user_activated, user_created)
-VALUES (5, 'd', 'asdsad','a5','asdsad', 'asdsad', false,  NOW());
-INSERT INTO usr (user_id, user_name, user_password, user_email, user_telephone, user_token, user_activated, user_created)
-VALUES (6, 'e', 'asdsad','a6','asdsad', 'asdsad', false,  NOW());
-INSERT INTO usr (user_id, user_name, user_password, user_email, user_telephone, user_token, user_activated, user_created)
-VALUES (7, 'f', 'asdsad','a7','asdsad', 'asdsad', false,  NOW());
-
-
-INSERT INTO assigned_role (user_id, role_id) VALUES (1, 3);
-INSERT INTO assigned_role (user_id, role_id) VALUES (1, 2);
-
-INSERT INTO assigned_role (user_id, role_id) VALUES (2, 3);
-INSERT INTO assigned_role (user_id, role_id) VALUES (2, 2);
-
-INSERT INTO assigned_role (user_id, role_id) VALUES (3, 1);
-INSERT INTO assigned_role (user_id, role_id) VALUES (3, 2);
-
-INSERT INTO assigned_role (user_id, role_id) VALUES (4, 2);
-INSERT INTO assigned_role (user_id, role_id) VALUES (5, 2);
-
-INSERT INTO assigned_role (user_id, role_id) VALUES (6, 1);
-INSERT INTO assigned_role (user_id, role_id) VALUES (6, 3);
-
-INSERT INTO assigned_role (user_id, role_id) VALUES (7, 3);

@@ -1,13 +1,10 @@
 package edu.netcracker.backend.service.serviceInterface;
 
-
-
 import edu.netcracker.backend.dto.request.UserCreateForm;
 import edu.netcracker.backend.dto.request.UserUpdateForm;
 import edu.netcracker.backend.dto.response.UserDTO;
 
 import java.util.List;
-
 
 public interface CarrierService {
 
@@ -15,15 +12,17 @@ public interface CarrierService {
 
     UserDTO getCarrierByEmail(String email);
 
-    UserDTO getCarrierById(Number userId);
+    UserDTO getCarrierById(Integer userId);
 
     List<UserDTO> getAllCarrier();
 
-    List<UserDTO> getAllCarrier(Number startId, Number endId);
+    List<UserDTO> getAllCarrier(Integer startId, Integer endId);
 
     UserDTO createCarrier(UserCreateForm createForm);
 
-    UserDTO deleteCarrier(Number userId);
+    UserDTO deleteCarrier(Integer userId);
 
     UserDTO updateCarrier(UserUpdateForm updateFrom);
+
+    List<UserDTO> getPagination(Integer start, Integer number);
 }

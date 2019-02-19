@@ -28,4 +28,6 @@ public interface UserDAO {
     List<User> findByRangeIdWithRole(Number startId, Number endId, Role role);
 
     List<User> findAllWithRole(Role role);
+
+    List<User> paginationWithRole(Integer from, Integer number, Role role);
 }

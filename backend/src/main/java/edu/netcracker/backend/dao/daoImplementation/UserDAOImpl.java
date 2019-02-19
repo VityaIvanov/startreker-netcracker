@@ -3,13 +3,11 @@ package edu.netcracker.backend.dao.daoImplementation;
 import edu.netcracker.backend.dao.daoInterface.CrudDAO;
 import edu.netcracker.backend.dao.daoInterface.RoleDAO;
 import edu.netcracker.backend.dao.daoInterface.UserDAO;
-import edu.netcracker.backend.dao.rowMapper.UserRowMapper;
 import edu.netcracker.backend.model.Role;
 import edu.netcracker.backend.model.User;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import org.springframework.dao.EmptyResultDataAccessException;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
 import java.util.ArrayList;
@@ -48,6 +46,11 @@ public class UserDAOImpl extends CrudDAO<User> implements UserDAO {
             "  INNER JOIN assigned_role ON assigned_role.user_id = usr.user_id\n" +
             "  INNER JOIN role ON assigned_role.role_id = role.role_id WHERE role_name = ? AND usr.user_id = ?";
 
+    private final String paginationSql = "SELECT * FROM usr\n" +
+            "  INNER JOIN assigned_role ON assigned_role.user_id = usr.user_id\n" +
+            "  INNER JOIN role ON assigned_role.role_id = role.role_id WHERE role_name = ?" +
+            "ORDER BY usr.user_id ASC LIMIT ? OFFSET ?";
+
     @Autowired
     public UserDAOImpl(RoleDAO roleDAO) {
         this.roleDAO = roleDAO;
@@ -68,7 +71,7 @@ public class UserDAOImpl extends CrudDAO<User> implements UserDAO {
             User user = getJdbcTemplate().queryForObject(
                     findByUsernameSql,
                     new Object[]{userName},
-                    new UserRowMapper());
+                   getGenericMapper());
             return user != null ? attachRoles(user) : Optional.empty();
         }catch (EmptyResultDataAccessException e){
             return Optional.empty();
@@ -80,7 +83,7 @@ public class UserDAOImpl extends CrudDAO<User> implements UserDAO {
             User user = getJdbcTemplate().queryForObject(
                     findByEmailSql,
                     new Object[]{email},
-                    new UserRowMapper());
+                    getGenericMapper());
             return user != null ? attachRoles(user) : Optional.empty();
         }catch (EmptyResultDataAccessException e){
             return Optional.empty();
@@ -109,7 +112,7 @@ public class UserDAOImpl extends CrudDAO<User> implements UserDAO {
         users.addAll(getJdbcTemplate().query(
                 findAllByRoleInRangeSql,
                 new Object[]{role.getRoleName(), startId, endId},
-                new UserRowMapper()));
+                getGenericMapper()));
 
         users.forEach(this::attachRoles);
 
@@ -123,7 +126,21 @@ public class UserDAOImpl extends CrudDAO<User> implements UserDAO {
         users.addAll(getJdbcTemplate().query(
                     findAllByRoleSql,
                     new Object[]{role.getRoleName()},
-                    new UserRowMapper()));
+                    getGenericMapper()));
+
+        users.forEach(this::attachRoles);
+
+        return users;
+    }
+
+    @Override
+    public List<User> paginationWithRole(Integer from, Integer number, Role role) {
+        List<User> users = new ArrayList<>();
+
+        users.addAll(getJdbcTemplate().query(
+                paginationSql,
+                new Object[]{role.getRoleName(), number, from},
+                getGenericMapper()));
 
         users.forEach(this::attachRoles);
 
@@ -147,7 +164,7 @@ public class UserDAOImpl extends CrudDAO<User> implements UserDAO {
             User user = getJdbcTemplate().queryForObject(
                     sql,
                     params,
-                    new UserRowMapper());
+                    getGenericMapper());
             return user != null ? attachRoles(user) : Optional.empty();
         }catch (EmptyResultDataAccessException e){
             return Optional.empty();

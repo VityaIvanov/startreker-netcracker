@@ -1,19 +1,26 @@
 package edu.netcracker.backend.dto.response;
 
+import edu.netcracker.backend.controller.exception.RequestException;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.util.List;
-
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class RequestExceptionMessage<T> {
+public class RequestExceptionMessage {
 
-    private int code;
-    private List<T> messages;
-    private String currentTime;
+    private int status;
+    private String error;
+    private String message;
+    private long timestamp;
+
+    public static RequestExceptionMessage createRequestExceptionMessage(RequestException exception) {
+        return new RequestExceptionMessage(exception.getHttpStatus().value(),
+                exception.getHttpStatus().name(),
+                exception.getMessage(),
+                System.currentTimeMillis());
+    }
 }

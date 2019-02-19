@@ -13,7 +13,7 @@ import java.util.stream.Collectors;
 @Data
 public class UserDTO {
 
-    private Long userId;
+    private Integer userId;
     private String userName;
     private String userEmail;
     private String userTelephone;
@@ -21,7 +21,7 @@ public class UserDTO {
     private String userCreatedDate;
     private List<String> roles;
 
-    private UserDTO(Long userId,
+    private UserDTO(Integer userId,
                     String userName,
                     String userEmail,
                     String userTelephone,

@@ -39,7 +39,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
         String accessToken = JwtUtils.getAccessToken(httpServletRequest);
 
-        if (jwtProvider.validateToken(accessToken, httpServletRequest) && isAccessToken(accessToken)) {
+        if (jwtProvider.validateToken(accessToken, httpServletRequest) && jwtProvider.isAccessToken(accessToken)) {
             handleToken(accessToken, httpServletRequest);
 
         } else if (httpServletRequest.getAttribute("isExpired") != null &&
@@ -63,7 +63,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
     private String createNewAccessTokenIfRefreshTokenIsValid(HttpServletRequest request) {
         String refreshToken =  JwtUtils.getRefreshToken(request);
-        if (isInvalidRefreshTokenSignature(refreshToken)) return null;
+        if (!jwtProvider.validateToken(refreshToken) || !jwtProvider.isRefreshToken(refreshToken)) return null;
 
         User user = userService.findByUsername(jwtProvider.retrieveSubject(refreshToken));
         if (isNotMatchedWithUsersRefreshToken(refreshToken, user)) return null;
@@ -91,14 +91,6 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                 userDetails.getAuthorities());
         authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
         SecurityContextHolder.getContext().setAuthentication(authentication);
-    }
-
-    private boolean isAccessToken(String token) {
-        return jwtProvider.retrieveTokenType(token).equals(JwtProvider.TokenType.ACCESS_TOKEN.toString());
-    }
-
-    private boolean isInvalidRefreshTokenSignature(String refreshToken) {
-        return !jwtProvider.validateToken(refreshToken) || isAccessToken(refreshToken);
     }
 
     private boolean isNotMatchedWithUsersRefreshToken(String refreshToken, User user) {

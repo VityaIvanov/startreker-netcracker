@@ -10,6 +10,7 @@ import edu.netcracker.backend.service.serviceInterface.CarrierService;
 import edu.netcracker.backend.service.serviceInterface.UserService;
 import edu.netcracker.backend.utils.AuthorityUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.util.Arrays;
@@ -24,11 +25,10 @@ public class CarrierServiceImpl implements CarrierService {
 
     @Override
     public UserDTO getCarrierByUsername(String username) {
-
         User user = userService.findByUsernameWithRole(username, AuthorityUtils.ROLE_CARRIER);
 
         if (user == null) {
-            throw new RequestException("Carrier " + username + " not exist");
+            throw new RequestException("Carrier " + username + " not found", HttpStatus.NOT_FOUND);
         }
 
         return UserDTO.from(user);
@@ -39,19 +39,19 @@ public class CarrierServiceImpl implements CarrierService {
         User user = userService.findByEmailWithRole(email, AuthorityUtils.ROLE_CARRIER);
 
         if (user == null) {
-            throw new RequestException("Carrier with email" + email + " not exist");
+            throw new RequestException("Carrier with email " + email + " not found", HttpStatus.NOT_FOUND);
         }
 
         return UserDTO.from(user);
     }
 
     @Override
-    public UserDTO getCarrierById(Number userId) {
+    public UserDTO getCarrierById(Integer userId) {
         User user = userService.findByIdWithRole(userId, AuthorityUtils.ROLE_CARRIER);
 
         if (user == null) {
-            throw new RequestException("No such user");
-        }
+            throw new RequestException("Carrier with id " + userId + " not found", HttpStatus.NOT_FOUND);
+    }
 
         return UserDTO.from(user);
     }
@@ -61,18 +61,37 @@ public class CarrierServiceImpl implements CarrierService {
         List<User> users = userService.findAllWithRole(AuthorityUtils.ROLE_CARRIER);
 
         if (users.isEmpty()) {
-            throw new RequestException("No carriers");
+            throw new RequestException("No carriers yet", HttpStatus.NOT_FOUND);
         }
 
         return users.stream().map(UserDTO::from).collect(Collectors.toList());
     }
 
     @Override
-    public List<UserDTO> getAllCarrier(Number startId, Number endId) {
+    public List<UserDTO> getAllCarrier(Integer startId, Integer endId) {
+        if (startId < 0 || endId < startId) {
+            throw new RequestException("Invalid range", HttpStatus.BAD_REQUEST);
+        }
+
         List<User> users = userService.findByRangeIdWithRole(startId, endId, AuthorityUtils.ROLE_CARRIER);
 
         if (users.isEmpty()) {
-            throw new RequestException("No carriers in range");
+            throw new RequestException("No carriers in id range yet", HttpStatus.NOT_FOUND);
+        }
+
+        return users.stream().map(UserDTO::from).collect(Collectors.toList());
+    }
+
+    @Override
+    public List<UserDTO> getPagination(Integer from, Integer number) {
+        if (from < 0 || number < 0) {
+            throw new RequestException("Invalid range", HttpStatus.BAD_REQUEST);
+        }
+
+        List<User> users = userService.paginationWithRole(from, number, AuthorityUtils.ROLE_CARRIER);
+
+        if (users.isEmpty()) {
+            throw new RequestException("No carriers in range", HttpStatus.NOT_FOUND);
         }
 
         return users.stream().map(UserDTO::from).collect(Collectors.toList());
@@ -80,16 +99,24 @@ public class CarrierServiceImpl implements CarrierService {
 
     @Override
     public UserDTO createCarrier(UserCreateForm createForm) {
+        if (userService.ifUsernameExist(createForm.getUsername())) {
+            throw new RequestException("Username already exist", HttpStatus.CONFLICT);
+        }
+
+        if (userService.ifEmailExist(createForm.getEmail())) {
+            throw new RequestException("Email already exist", HttpStatus.CONFLICT);
+        }
+
         User user = userService.createUser(createForm, carrierRoles());
         return UserDTO.from(user);
     }
 
     @Override
-    public UserDTO deleteCarrier(Number userId) {
+    public UserDTO deleteCarrier(Integer userId) {
         User user = userService.findByIdWithRole(userId, AuthorityUtils.ROLE_CARRIER);
 
         if (user == null) {
-            throw new RequestException("No carriers with this id " + userId);
+            throw new RequestException("Carrier " + userId + " not found ", HttpStatus.NOT_FOUND);
         }
 
         userService.delete(user);
@@ -101,15 +128,17 @@ public class CarrierServiceImpl implements CarrierService {
         User user = userService.findByIdWithRole(updateFrom.getUserId(), AuthorityUtils.ROLE_CARRIER);
 
         if (user == null) {
-            throw new RequestException("No carriers with this id " + updateFrom.getUserId());
+            throw new RequestException("Carrier " + updateFrom.getUserId() + " not found ", HttpStatus.NOT_FOUND);
         }
 
-        if (userService.ifUsernameExist(updateFrom.getUsername())) {
-            throw new RequestException("Username already exist");
+        if (!user.getUsername().equals(updateFrom.getUsername()) &&
+                userService.ifUsernameExist(updateFrom.getUsername())) {
+            throw new RequestException("Username already exist", HttpStatus.CONFLICT);
         }
 
-        if (userService.ifEmailExist(updateFrom.getEmail())) {
-            throw new RequestException("Email already exist");
+        if (!user.getUserEmail().equals(updateFrom.getEmail()) &&
+                userService.ifEmailExist(updateFrom.getEmail())) {
+            throw new RequestException("Email already exist", HttpStatus.CONFLICT);
         }
 
         user.setUserEmail(updateFrom.getEmail());

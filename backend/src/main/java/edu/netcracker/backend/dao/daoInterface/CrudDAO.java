@@ -2,7 +2,8 @@ package edu.netcracker.backend.dao.daoInterface;
 
 import edu.netcracker.backend.dao.annotation.Attribute;
 import edu.netcracker.backend.dao.annotation.PrimaryKey;
-import edu.netcracker.backend.dao.annotation.Table;
+import edu.netcracker.backend.dao.daoInterface.sql.PostgresSqlBuilder;
+import edu.netcracker.backend.dao.daoInterface.sql.SQLBuilder;
 import edu.netcracker.backend.dao.rowMapper.GenericMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,11 +19,9 @@ import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.sql.PreparedStatement;
 import java.sql.Statement;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
+
+import static java.lang.Math.toIntExact;
 
 public abstract class CrudDAO<T> {
 
@@ -34,9 +33,9 @@ public abstract class CrudDAO<T> {
     private String deleteSql;
     private String existsSql;
     private GenericMapper<T> genericMapper;
-    private Map<Field, PrimaryKey> primaryMapper = new HashMap<>();
-    private Map<Field, Attribute> mapper = new HashMap<>();
-    private final Logger logger = LoggerFactory.getLogger(CrudDAO.class);
+    private Map<Field, PrimaryKey> fieldPrimaryKeyMap = new HashMap<>();
+    private Map<Field, Attribute> fieldAttributeMap = new HashMap<>();
+    protected final Logger logger = LoggerFactory.getLogger(CrudDAO.class);
 
     @Autowired
     public CrudDAO() {
@@ -45,15 +44,16 @@ public abstract class CrudDAO<T> {
         ParameterizedType pt = (ParameterizedType) t;
         this.clazz = (Class<T>) pt.getActualTypeArguments()[0];
         resolveFields();
-        selectSql = assembleSelectSql();
-        createSql = assembleCreateSql();
-        updateSql = assembleUpdateSql();
-        deleteSql = assembleDeleteSql();
-        existsSql = assembleExistsSql();
+        SQLBuilder builder = new PostgresSqlBuilder(clazz, fieldPrimaryKeyMap, fieldAttributeMap);
+        selectSql = builder.assembleSelectSql();
+        createSql = builder.assembleInsertSql();
+        updateSql = builder.assembleUpdateSql();
+        deleteSql = builder.assembleDeleteSql();
+        existsSql = builder.assembleExistsSql();
         genericMapper = new GenericMapper<>();
         genericMapper.setClazz(clazz);
-        genericMapper.setMapper(mapper);
-        genericMapper.setPrimaryMapper(primaryMapper);
+        genericMapper.setFieldAttributeMap(fieldAttributeMap);
+        genericMapper.setFieldPrimaryKeyMap(fieldPrimaryKeyMap);
     }
 
     public Optional<T> find(Number id) {
@@ -82,11 +82,15 @@ public abstract class CrudDAO<T> {
             };
             KeyHolder holder = new GeneratedKeyHolder();
             jdbcTemplate.update(psc, holder);
-            for(Field field : primaryMapper.keySet()){
+            for(Field field : fieldPrimaryKeyMap.keySet()){
                 try {
-                    field.set(entity, holder.getKeys().get(
-                            field.getAnnotation(PrimaryKey.class)
-                                    .value()));
+                    Number result = (Number) holder.getKeys().get(field.getAnnotation(PrimaryKey.class).value());
+                    if(field.getType().equals(Long.class)){
+                        field.set(entity, result.longValue());
+                    }
+                    else if(field.getType().equals(Integer.class)){
+                        field.set(entity, toIntExact(result.longValue()));
+                    }
                 } catch (IllegalAccessException e) {
                     logger.warn(e.toString());
                 }
@@ -113,20 +117,20 @@ public abstract class CrudDAO<T> {
 
     private Object[] resolveCreateParameters(T entity) {
         List<Object> objects = new ArrayList<>();
-        addMapperParams(objects, entity, mapper);
+        addMapperParams(objects, entity, fieldAttributeMap);
         return objects.toArray();
     }
 
     private Object[] resolveUpdateParameters(T entity) {
         List<Object> objects = new ArrayList<>();
-        addMapperParams(objects, entity, mapper);
-        addMapperParams(objects, entity, primaryMapper);
+        addMapperParams(objects, entity, fieldAttributeMap);
+        addMapperParams(objects, entity, fieldPrimaryKeyMap);
         return objects.toArray();
     }
 
     private Object[] resolvePrimaryKeyParameters(T entity) {
         List<Object> objects = new ArrayList<>();
-        addMapperParams(objects, entity, primaryMapper);
+        addMapperParams(objects, entity, fieldPrimaryKeyMap);
         return objects.toArray();
     }
 
@@ -141,72 +145,14 @@ public abstract class CrudDAO<T> {
         }
     }
 
-    private String assembleCreateSql() {
-        StringBuilder sb = new StringBuilder("INSERT INTO ");
-        sb.append(clazz.getAnnotation(Table.class).value())
-                .append(" (");
-        for (Attribute attribute : mapper.values()) {
-            sb.append(attribute.value()).append(", ");
-        }
-        sb.delete(sb.length() - 2, sb.length());
-        sb.append(") VALUES(");
-        for (int i = 0; i < mapper.size(); i++) {
-            sb.append("?, ");
-        }
-        sb.delete(sb.length() - 2, sb.length());
-        sb.append(")");
-        return sb.toString();
-    }
-
-    private String assembleUpdateSql() {
-        StringBuilder sb = new StringBuilder("UPDATE ");
-        sb.append(clazz.getAnnotation(Table.class).value())
-                .append(" SET ");
-        for (Attribute attribute : mapper.values()) {
-            sb.append(attribute.value()).append(" = ?, ");
-        }
-        sb.delete(sb.length() - 2, sb.length());
-        addPrimaryKeysWhere(sb);
-        return sb.toString();
-    }
-
-    private String assembleDeleteSql() {
-        StringBuilder sb = new StringBuilder("DELETE FROM ");
-        sb.append(clazz.getAnnotation(Table.class).value());
-        addPrimaryKeysWhere(sb);
-        return sb.toString();
-    }
-
-    private String assembleSelectSql() {
-        StringBuilder sb = new StringBuilder("SELECT * FROM ");
-        sb.append(clazz.getAnnotation(Table.class).value());
-        addPrimaryKeysWhere(sb);
-        return sb.toString();
-    }
-
-    private String assembleExistsSql() {
-        StringBuilder sb = new StringBuilder("SELECT COUNT(*) FROM ");
-        sb.append(clazz.getAnnotation(Table.class).value());
-        addPrimaryKeysWhere(sb);
-        return sb.toString();
-    }
-
-    private void addPrimaryKeysWhere(StringBuilder sb) {
-        sb.append(" WHERE ");
-        for (PrimaryKey primaryKey : primaryMapper.values()) {
-            sb.append(primaryKey.value()).append(" = ? AND ");
-        }
-        sb.delete(sb.length() - 5, sb.length());
-    }
-
     private void resolveFields() {
         Field[] fields = clazz.getDeclaredFields();
         for (Field field : fields) {
             field.setAccessible(true);
             Attribute attribute = field.getAnnotation(Attribute.class);
-            if (attribute != null) mapper.put(field, attribute);
+            if (attribute != null) fieldAttributeMap.put(field, attribute);
             PrimaryKey primaryKey = field.getAnnotation(PrimaryKey.class);
-            if (primaryKey != null) primaryMapper.put(field, primaryKey);
+            if (primaryKey != null) fieldPrimaryKeyMap.put(field, primaryKey);
         }
     }
 

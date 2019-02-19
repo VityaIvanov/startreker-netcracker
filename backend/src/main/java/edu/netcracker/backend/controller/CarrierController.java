@@ -5,6 +5,7 @@ import edu.netcracker.backend.dto.request.UserUpdateForm;
 import edu.netcracker.backend.dto.response.UserDTO;
 import edu.netcracker.backend.service.serviceInterface.CarrierService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -30,42 +31,56 @@ public class CarrierController {
         this.carrierService = carrierService;
     }
 
-    @GetMapping(path = "/api/carrier-by-username")
+    @GetMapping(path = "/api/admin/carrier-by-username")
+    @PreAuthorize("hasRole('ADMIN')")
     public UserDTO getCarrierByUsername(@RequestParam("username") String username){
         return carrierService.getCarrierByUsername(username);
     }
 
-    @GetMapping(path = "/api/carrier-by-email")
+    @GetMapping(path = "/api/admin/carrier-by-email")
+    @PreAuthorize("hasRole('ADMIN')")
     public UserDTO getCarrierByEmail(@Valid @Email @RequestParam("email") String email){
         return carrierService.getCarrierByEmail(email);
     }
 
-    @GetMapping(path = "/api/carrier/{userId}")
-    public UserDTO getCarrierById(@PathVariable Number userId){
+    @GetMapping(path = "/api/admin/carrier/{userId}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public UserDTO getCarrierById(@PathVariable Integer userId){
         return carrierService.getCarrierById(userId);
     }
 
-    @GetMapping(path = "/api/carrier")
+    @GetMapping(path = "/api/admin/carrier")
+    @PreAuthorize("hasRole('ADMIN')")
     public List<UserDTO> getAllCarrier(){
         return carrierService.getAllCarrier();
     }
 
-    @GetMapping(path = "/api/carrier-in-range-id")
-    public List<UserDTO> getAllCarrier(@RequestParam("startId") Number startId, @RequestParam("endId") Number endId){
+    @GetMapping(path = "/api/admin/carrier-in-range-id")
+    @PreAuthorize("hasRole('ADMIN')")
+    public List<UserDTO> getAllCarrier(@RequestParam("startId") Integer startId, @RequestParam("endId") Integer endId){
         return carrierService.getAllCarrier(startId, endId);
     }
 
-    @PostMapping(path = "/api/carrier")
+    @GetMapping(path = "/api/admin/pagination")
+    @PreAuthorize("hasRole('ADMIN')")
+    public List<UserDTO> getPagination(@RequestParam("from") Integer from, @RequestParam("number") Integer number){
+        return carrierService.getPagination(from, number);
+    }
+
+    @PostMapping(path = "/api/admin/carrier")
+    @PreAuthorize("hasRole('ADMIN')")
     public UserDTO createCarrier(@Valid @RequestBody UserCreateForm createForm){
         return carrierService.createCarrier(createForm);
     }
 
-    @DeleteMapping(path = "/api/carrier/{userId}")
-    public UserDTO deleteCarrier(@PathVariable Number userId){
+    @DeleteMapping(path = "/api/admin/carrier/{userId}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public UserDTO deleteCarrier(@PathVariable Integer userId){
         return carrierService.deleteCarrier(userId);
     }
 
-    @PutMapping(path = "/api/carrier")
+    @PutMapping(path = "/api/admin/carrier")
+    @PreAuthorize("hasRole('ADMIN')")
     public UserDTO updateCarrier(@Valid @RequestBody UserUpdateForm carrierForm){
         return carrierService.updateCarrier(carrierForm);
     }

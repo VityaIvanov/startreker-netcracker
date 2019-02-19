@@ -17,5 +17,5 @@ public class UserUpdateForm extends UserForm {
 
     @NotNull
     @JsonProperty("user_id")
-    private Number userId;
+    private Integer userId;
 }

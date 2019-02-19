@@ -128,6 +128,11 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    public List<User> paginationWithRole(Integer from, Integer number, Role role) {
+        return userDAO.paginationWithRole(from, number, role);
+    }
+
+    @Override
     public UserDetails createUserDetails(UserInformationHolder userInformationHolder) {
         if (userInformationHolder == null) {
             return null;

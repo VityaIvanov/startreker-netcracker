@@ -107,4 +107,20 @@ public class JwtProvider {
                 .parseClaimsJws(jwt)
                 .getBody();
     }
+
+    public boolean isAccessToken(String token) {
+        return ifTokenMatchType(token, TokenType.ACCESS_TOKEN);
+    }
+
+    public boolean isRefreshToken(String token) {
+        return ifTokenMatchType(token, TokenType.REFRESH_TOKEN);
+    }
+
+    public boolean isRegistrationToken(String token) {
+        return ifTokenMatchType(token, TokenType.REGISTRATION_TOKEN);
+    }
+
+    private boolean ifTokenMatchType(String token, TokenType tokenType) {
+        return retrieveTokenType(token).equals(tokenType.name());
+    }
 }

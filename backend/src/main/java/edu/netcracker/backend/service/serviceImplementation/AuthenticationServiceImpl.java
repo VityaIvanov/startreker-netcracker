@@ -12,6 +12,7 @@ import edu.netcracker.backend.service.serviceInterface.AuthenticationService;
 import edu.netcracker.backend.service.serviceInterface.UserService;
 import edu.netcracker.backend.utils.AuthorityUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -27,10 +28,6 @@ import java.util.stream.Collectors;
 @Service
 public class AuthenticationServiceImpl implements AuthenticationService {
 
-    private static final int ERROR_USER_ALREADY_EXISTS = -1;
-    private static final int ERROR_MAIL_ALREADY_EXISTS = -2;
-    private static final int ERROR_NO_SUCH_USER = -3;
-
     @Autowired
     private UserService userService;
     @Autowired
@@ -44,11 +41,11 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     @Override
     public User signUp(SignUpForm signUpForm, HttpServletRequest request) {
         if (userService.ifUsernameExist(signUpForm.getUsername())) {
-            throw new RequestException("Username already exist");
+            throw new RequestException("Username already exist", HttpStatus.CONFLICT);
         }
 
         if (userService.ifEmailExist(signUpForm.getEmail())) {
-            throw new RequestException("Email already exist");
+            throw new RequestException("Email already exist", HttpStatus.CONFLICT);
         }
 
         User user = userService.createUser(signUpForm, false, Collections.singletonList(AuthorityUtils.ROLE_USER));
@@ -65,7 +62,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         User user = userService.findByEmail(emailFrom.getEmail());
 
         if (user == null) {
-            throw new RequestException("No such user");
+            throw new RequestException("User not found",  HttpStatus.NOT_FOUND);
         }
 
         String newUserPassword = userService.changePasswordForUser(user);
@@ -99,46 +96,41 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
     @Override
     public Message confirmPassword(String token) {
-
-        if (!jwtProvider.validateToken(token))
-            throw new RequestException("Invalid token");
+        if (!jwtProvider.validateToken(token) && !jwtProvider.isRegistrationToken(token))
+            throw new RequestException("Invalid token", HttpStatus.BAD_REQUEST);
 
         User user = userService.findByUsername(jwtProvider.retrieveSubject(token));
 
         if (user == null) {
-            throw new RequestException("Invalid token");
+            throw new RequestException("User not found",  HttpStatus.NOT_FOUND);
         }
 
         user.setUserIsActivated(true);
         userService.save(user);
 
-        return new Message(200, "password is confirmed");
+        return new Message(HttpStatus.OK, "Password is confirmed");
     }
 
     @Override
     public Message logOut() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
-        if (authentication == null) {
-            throw new RequestException("User is not authenticated!");
-        }
-
         UserDetails userDetails = (UserDetails) authentication.getPrincipal();
 
         User user = userService.findByUsername(userDetails.getUsername());
 
         if (user == null)
-            throw new RequestException("No such user!");
+            throw new RequestException("User not found",  HttpStatus.NOT_FOUND);
 
 
         user.setUserRefreshToken(null);
         userService.save(user);
 
-        return new Message(200, "You are logged out");
+        return new Message(HttpStatus.OK, "You are logged out");
     }
 
     private String getContextPath(HttpServletRequest request) {
-        // ne robet
+        // This code is work, but if you use header Origin it will break
         return request.getRequestURL().toString().replace(request.getRequestURI(), "");
     }
 }

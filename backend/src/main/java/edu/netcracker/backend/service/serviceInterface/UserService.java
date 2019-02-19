@@ -46,4 +46,5 @@ public interface UserService extends UserDetailsService {
 
     List<User> findAllWithRole(Role role);
 
+    List<User> paginationWithRole(Integer from, Integer number, Role role);
 }
