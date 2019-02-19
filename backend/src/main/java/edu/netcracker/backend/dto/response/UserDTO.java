@@ -1,5 +1,6 @@
 package edu.netcracker.backend.dto.response;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import edu.netcracker.backend.model.User;
 import lombok.Data;
 import org.springframework.security.core.GrantedAuthority;
@@ -13,23 +14,27 @@ import java.util.stream.Collectors;
 @Data
 public class UserDTO {
 
-    private Integer userId;
-    private String userName;
+    private Integer id;
+    private String username;
+    @JsonProperty("user_email")
     private String userEmail;
+    @JsonProperty("user_telephone")
     private String userTelephone;
+    @JsonProperty("user_is_activated")
     private boolean userIsActivated;
+    @JsonProperty("user_created_cate")
     private String userCreatedDate;
     private List<String> roles;
 
-    private UserDTO(Integer userId,
-                    String userName,
+    private UserDTO(Integer id,
+                    String username,
                     String userEmail,
                     String userTelephone,
                     boolean userIsActivated,
                     LocalDate userCreatedDate,
                     Collection<? extends GrantedAuthority> authorities) {
-        this.userId = userId;
-        this.userName = userName;
+        this.id = id;
+        this.username = username;
         this.userEmail = userEmail;
         this.userTelephone = userTelephone;
         this.userIsActivated = userIsActivated;
