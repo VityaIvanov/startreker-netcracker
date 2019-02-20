@@ -10,7 +10,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
-@Table("role")
+@Table("ROLE_A")
 public class Role {
 
     @PrimaryKey("role_id")

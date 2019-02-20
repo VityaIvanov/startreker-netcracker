@@ -19,37 +19,37 @@ import java.util.stream.Collectors;
 public class UserDAOImpl extends CrudDAO<User> implements UserDAO {
 
     private final RoleDAO roleDAO;
-    private final String findByUsernameSql = "SELECT * FROM usr WHERE user_name = ?";
-    private final String findByEmailSql = "SELECT * FROM usr WHERE user_email = ?";
+    private final String findByUsernameSql = "SELECT * FROM USER_A WHERE user_name = ?";
+    private final String findByEmailSql = "SELECT * FROM USER_A WHERE user_email = ?";
     private final String findAllRolesSql = "SELECT role_id FROM assigned_role WHERE user_id = ?";
     private final String removeAllUserRolesSql = "DELETE FROM assigned_role WHERE user_id = ?";
     private final String addRoleSql = "INSERT INTO assigned_role (user_id, role_id) VALUES (?, ?)";
     private final String removeRoleSql = "DELETE FROM assigned_role WHERE user_id = ? AND role_id = ?";
 
-    private final String findByUsernameWithRoleSql = "SELECT DISTINCT * FROM usr\n" +
-            "  INNER JOIN assigned_role ON assigned_role.user_id = usr.user_id\n" +
-            "  INNER JOIN role ON assigned_role.role_id = role.role_id WHERE role_name = ? and user_name = ?;";
+    private final String findByUsernameWithRoleSql = "SELECT DISTINCT * FROM USER_A\n" +
+            "  INNER JOIN assigned_role ON assigned_role.user_id = USER_A.user_id\n" +
+            "  INNER JOIN ROLE_A ON assigned_role.role_id = ROLE_A.role_id WHERE role_name = ? and user_name = ?;";
 
-    private final String findByEmailWithRoleSql = "SELECT DISTINCT * FROM usr\n" +
-            "  INNER JOIN assigned_role ON assigned_role.user_id = usr.user_id\n" +
-            "  INNER JOIN role ON assigned_role.role_id = role.role_id WHERE role_name = ? and user_email = ?;";
+    private final String findByEmailWithRoleSql = "SELECT DISTINCT * FROM USER_A\n" +
+            "  INNER JOIN assigned_role ON assigned_role.user_id = USER_A.user_id\n" +
+            "  INNER JOIN ROLE_A ON assigned_role.role_id = ROLE_A.role_id WHERE role_name = ? and user_email = ?;";
 
-    private final String findAllByRoleSql = "SELECT DISTINCT * FROM usr\n" +
-            "  INNER JOIN assigned_role ON assigned_role.user_id = usr.user_id\n" +
-            "  INNER JOIN role ON assigned_role.role_id = role.role_id WHERE role_name = ?";
+    private final String findAllByRoleSql = "SELECT DISTINCT * FROM USER_A\n" +
+            "  INNER JOIN assigned_role ON assigned_role.user_id = USER_A.user_id\n" +
+            "  INNER JOIN ROLE_A ON assigned_role.role_id = ROLE_A.role_id WHERE role_name = ?";
 
-    private final String findAllByRoleInRangeSql = "SELECT DISTINCT * FROM usr\n" +
-            "  INNER JOIN assigned_role ON assigned_role.user_id = usr.user_id\n" +
-            "  INNER JOIN role ON assigned_role.role_id = role.role_id WHERE role_name = ? AND usr.user_id BETWEEN ? AND ?";
+    private final String findAllByRoleInRangeSql = "SELECT DISTINCT * FROM USER_A\n" +
+            "  INNER JOIN assigned_role ON assigned_role.user_id = USER_A.user_id\n" +
+            "  INNER JOIN ROLE_A ON assigned_role.role_id = ROLE_A.role_id WHERE role_name = ? AND USER_A.user_id BETWEEN ? AND ?";
 
-    private final String findByRoleWithIdSql = "SELECT DISTINCT * FROM usr\n" +
-            "  INNER JOIN assigned_role ON assigned_role.user_id = usr.user_id\n" +
-            "  INNER JOIN role ON assigned_role.role_id = role.role_id WHERE role_name = ? AND usr.user_id = ?";
+    private final String findByRoleWithIdSql = "SELECT DISTINCT * FROM USER_A\n" +
+            "  INNER JOIN assigned_role ON assigned_role.user_id = USER_A.user_id\n" +
+            "  INNER JOIN ROLE_A ON assigned_role.role_id = ROLE_A.role_id WHERE role_name = ? AND USER_A.user_id = ?";
 
-    private final String paginationSql = "SELECT * FROM usr\n" +
-            "  INNER JOIN assigned_role ON assigned_role.user_id = usr.user_id\n" +
-            "  INNER JOIN role ON assigned_role.role_id = role.role_id WHERE role_name = ?" +
-            "ORDER BY usr.user_id ASC LIMIT ? OFFSET ?";
+    private final String paginationSql = "SELECT * FROM USER_A\n" +
+            "  INNER JOIN assigned_role ON assigned_role.user_id = USER_A.user_id\n" +
+            "  INNER JOIN ROLE_A ON assigned_role.role_id = ROLE_A.role_id WHERE role_name = ?" +
+            "ORDER BY USER_A.user_id ASC LIMIT ? OFFSET ?";
 
     @Autowired
     public UserDAOImpl(RoleDAO roleDAO) {

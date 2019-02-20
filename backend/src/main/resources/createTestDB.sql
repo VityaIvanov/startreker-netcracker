@@ -1,8 +1,8 @@
 DROP TABLE IF EXISTS assigned_role;
-DROP TABLE IF EXISTS usr;
-DROP TABLE IF EXISTS role;
+DROP TABLE IF EXISTS USER_A;
+DROP TABLE IF EXISTS ROLE_A;
 
-CREATE TABLE usr
+CREATE TABLE USER_A
 (
   user_id            BIGINT AUTO_INCREMENT PRIMARY KEY,
   user_name          VARCHAR(64)  not null,
@@ -14,7 +14,7 @@ CREATE TABLE usr
   user_created DATE
 );
 
-CREATE TABLE role
+CREATE TABLE ROLE_A
 (
   role_id   BIGINT AUTO_INCREMENT PRIMARY KEY,
   role_name VARCHAR(64) not null
@@ -22,10 +22,10 @@ CREATE TABLE role
 
 CREATE TABLE assigned_role
 (
-  user_id BIGINT REFERENCES usr (user_id),
-  role_id BIGINT REFERENCES role (role_id)
+  user_id BIGINT REFERENCES USER_A (user_id),
+  role_id BIGINT REFERENCES ROLE_A (role_id)
 );
 
-INSERT INTO role (role_name) VALUES ('ROLE_ADMIN');
-INSERT INTO role (role_name) VALUES ('ROLE_USER');
-INSERT INTO role (role_name) VALUES ('ROLE_CARRIER');
+INSERT INTO ROLE_A (role_name) VALUES ('ROLE_ADMIN');
+INSERT INTO ROLE_A (role_name) VALUES ('ROLE_USER');
+INSERT INTO ROLE_A (role_name) VALUES ('ROLE_CARRIER');
